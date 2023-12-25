@@ -133,4 +133,4 @@ def update_monthly_graph_expense(hov_data1, hov_data2):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=5000)
+    app.run_server(debug=True)
