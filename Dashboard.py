@@ -34,15 +34,22 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SLATE],
 server = app.server
 
 app.layout = dbc.Container([
-    dbc.Row(
-        dbc.Col(
-            html.H1("Company Private Limited", className='text-xl-center text-capitalize mb-5 mt-5'),
-            width=12
-        )
+    dbc.Navbar(
+        children=[
+            dbc.Col(dbc.NavLink("Clients Company Name", href="#",className='text-xl-left text-capitalize bold font-weight-bolder'),width=8,className='text-capitalize' ),
+            dbc.Col(dbc.NavItem(dbc.NavLink("LinkedIn", href="https://www.linkedin.com/in/vignesh-krishnan-a2136b1bb",className='text-xl-center')),width=2),
+            dbc.Col(dbc.NavItem(dbc.NavLink("GitHub", href="https://github.com/VigneshKrishnan-Analyst",className='text-xl-center')),width=2),
+        ],
+        color="dark",
+        className='mb-2.5 mt-2.5'
+
+
+
+
     ),
     dbc.Row(
             dbc.Col(
-                html.H1("Hover over the pie charts to see the bar graph update !!"),
+                html.H1("Hover over the pie charts to see the bar graph update !!", className="mb-5 mt-2.5 text-sm-center"),
                 width=12
             )
         ),
