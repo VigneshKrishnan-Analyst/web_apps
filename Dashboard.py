@@ -71,7 +71,7 @@ app.layout = dbc.Container([
                       },
                       # className=
 
-                      ), width=4),
+                      ), xs=12, sm=12, md=12, lg=4, xl=4),
             dbc.Col(
                 dcc.Graph(id="Expense_mix",
                           figure=px.pie(data_frame=chart2_df, names='Expense', values='Amount',
@@ -89,7 +89,7 @@ app.layout = dbc.Container([
                           },
                           # className=
 
-                          ), width=4),
+                          ), xs=12, sm=12, md=12, lg=4, xl=4),
             dbc.Col(
                 dcc.Graph(id="monthly_breakup",
                           figure={},
@@ -105,7 +105,7 @@ app.layout = dbc.Container([
                           },
                           # className=
 
-                          ), width=4)
+                          ), xs=12, sm=12, md=12, lg=4, xl=4)
         ]
     )
 
