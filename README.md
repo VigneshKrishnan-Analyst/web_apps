@@ -1,2 +1,1 @@
-# web_apps
-Webapps
+This dashboard is created with Python dash library
