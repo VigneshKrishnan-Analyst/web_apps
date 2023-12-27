@@ -1,143 +1,138 @@
 import pandas as pd
+# import numpy as np
 import dash
 from dash import html
 from dash import dcc
 from dash.dependencies import Input, Output
 import plotly.express as px
+# import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
-from dash import callback_context
+# from dash import callback_context
+import os
 
-url = 'https://raw.githubusercontent.com/VigneshKrishnan-Analyst/Recent-Projects/main/Tally%20to%20Zoho%20conversion/Dash/Data/data.csv'
+# Wrangling ----------------------------------------------------------------------------------
+url = "https://raw.githubusercontent.com/VigneshKrishnan-Analyst/Recent-Projects/main/Financial%20Dashboard/Data/data.csv"
 df = pd.read_csv(url)
-chart1_df = df.loc[df['Type'] == "Sales"]
-chart2_dict_temp = {}
-temp_list = ['profit']
-for i in df['Account'].loc[df['Type'] != 'Sales'].unique():
-    temp_list.append(i)
-for exp in temp_list:
-    if exp != 'profit':
-        chart2_dict_temp[exp] = df['Amount'].loc[df['Account'] == exp].sum()
+
+cls_df = pd.pivot_table(df, index=['Direction', 'State/UT', 'Year', 'Contact'], columns='Type', values="Amount",
+                        aggfunc='sum').reset_index()
+cls_df['profit'] = cls_df['Sales']-cls_df['Purchases']-cls_df['Expense']
+
+pl = []
+Abs_Amount = []
+for i in cls_df['profit']:
+    if i > 0:
+        pl.append('Profit')
+        Abs_Amount.append(abs(i))
     else:
-        chart2_dict_temp[exp] = (
-                    df['Amount'].loc[df['Type'] == 'Sales'].sum() - df['Amount'].loc[df['Type'] != 'Sales'].sum())
-chart2_dict = {
-    'Expense': chart2_dict_temp.keys(),
-    'Amount': chart2_dict_temp.values()
-}
+        pl.append('Loss')
+        Abs_Amount.append(abs(i))
+cls_df['profit/Loss'] = pl
+cls_df['Abs_profit'] = Abs_Amount
 
-chart2_df = pd.DataFrame.from_dict(chart2_dict)
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SLATE],
+# App -----------------------------------------------------------------------------------------
+
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX],
                 meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, initial-scale=1.0'}]
                 )
 server = app.server
 
 app.layout = dbc.Container([
-    dbc.Navbar(
-        children=[
-            dbc.Col(dbc.NavLink("Clients Company Name", href="#",className='text-xl-left text-capitalize bold font-weight-bolder'),width=8,className='text-capitalize' ),
-            dbc.Col(dbc.NavItem(dbc.NavLink("LinkedIn", href="https://www.linkedin.com/in/vignesh-krishnan-a2136b1bb",className='text-xl-center')),width=2),
-            dbc.Col(dbc.NavItem(dbc.NavLink("GitHub", href="https://github.com/VigneshKrishnan-Analyst",className='text-xl-center')),width=2),
-        ],
-        color="dark",
-        className='mb-2.5 mt-2.5'
 
-
-
-
+    dbc.Row(
+        dbc.Col(html.H1("Financial Dashboard",
+                        className='text-center text-primary mb-4'),
+                width=12)
     ),
-    dbc.Row(
-            dbc.Col(
-                html.H1("Hover over the pie charts to see the bar graph update !!", className="mb-5 mt-2.5 text-sm-center"),
-                width=12
-            )
-        ),
-    dbc.Row(
-        [dbc.Col(
-            dcc.Graph(id="Sales_mix",
-                      figure=px.pie(data_frame=chart1_df, names='Account', values="Amount",
-                                    custom_data=['Account'], title='Sales mix as on date'),
-                      clickData=None,
-                      hoverData=None,
-                      config={
-                          'staticPlot': False,  # True,False
-                          'scrollZoom': True,  # True,False
-                          'doubleClick': 'reset',  # 'reset','autosize','reset+autosize',False
-                          'showTips': False,  # True,False
-                          'displayModeBar': True,  # True,False,'hover'
-                          'watermark': True,
-                          # modebarButtonsToRemove:['pan2d','select2d']
-                      },
-                      # className=
 
-                      ), xs=12, sm=12, md=12, lg=4, xl=4),
-            dbc.Col(
-                dcc.Graph(id="Expense_mix",
-                          figure=px.pie(data_frame=chart2_df, names='Expense', values='Amount',
-                                        custom_data=['Expense'], title='Expenses as a percentage of sales'),
-                          clickData=None,
-                          hoverData=None,
-                          config={
-                              'staticPlot': False,  # True,False
-                              'scrollZoom': True,  # True,False
-                              'doubleClick': 'reset',  # 'reset','autosize','reset+autosize',False
-                              'showTips': False,  # True,False
-                              'displayModeBar': True,  # True,False,'hover'
-                              'watermark': True,
-                              # modebarButtonsToRemove:['pan2d','select2d']
-                          },
-                          # className=
+    dbc.Row([
+        dbc.Col([
+            dcc.Graph(id='treemap', figure=px.treemap(
+                data_frame=cls_df,
+                path=['Year', 'Direction', 'State/UT', ],
+                values='Abs_profit',
+                color='profit/Loss',
+                template='plotly_dark',
+                color_discrete_map={
+                    'Profit': 'Green',
+                    'Loss': 'crimson'},
+                custom_data=['State/UT']),
+                      )], xs=12, sm=12, md=12, lg=12, xl=12),
 
-                          ), xs=12, sm=12, md=12, lg=4, xl=4),
-            dbc.Col(
-                dcc.Graph(id="monthly_breakup",
-                          figure={},
-                          clickData=None,
-                          config={
-                              'staticPlot': False,  # True,False
-                              'scrollZoom': True,  # True,False
-                              'doubleClick': 'reset',  # 'reset','autosize','reset+autosize',False
-                              'showTips': False,  # True,False
-                              'displayModeBar': True,  # True,False,'hover'
-                              'watermark': True,
-                              # modebarButtonsToRemove:['pan2d','select2d']
-                          },
-                          # className=
-
-                          ), xs=12, sm=12, md=12, lg=4, xl=4)
-        ]
-    )
-
+        dbc.Row([
+            dbc.Col([
+                dcc.Graph(id='starburst', figure={},
+                          )], xs=12, sm=12, md=12, lg=6, xl=6, className='w-50 p-3'),
+            dbc.Col([
+                dcc.Graph(id='line', figure={}
+                          )], xs=12, sm=12, md=12, lg=6, xl=6, className='w-50 p-3'),
+        ]),
+    ])
 ])
 
 
 @app.callback(
-    Output(component_id='monthly_breakup', component_property='figure'),
-    Input(component_id='Expense_mix', component_property='hoverData'),
-    Input(component_id='Sales_mix', component_property='hoverData')
+    Output(component_id='starburst', component_property='figure'),
+    Input(component_id='treemap', component_property='hoverData'),
+    Input(component_id='treemap', component_property='clickData'),
+    prevent_initial_call=True,
+    allow_duplicate=True
 )
-def update_monthly_graph_expense(hov_data1, hov_data2):
-    graph_id = callback_context.triggered_id
-    if graph_id == 'Expense_mix':
-        hov_data = hov_data1
-        title_x = f'Monthly break-up of expense {hov_data["points"][0]["customdata"][0]}'
-        hov = hov_data['points'][0]['customdata'][0]
-    elif graph_id == 'Sales_mix':
-        hov_data = hov_data2
-        title_x = f'Monthly break-up of sales {hov_data["points"][0]["customdata"][0][0]}'
-        hov = hov_data['points'][0]['customdata'][0][0]
+def update_starburst(hover_data, click_data):
+    if click_data is None and hover_data is None:
+        entry = "2020"
+    elif click_data is None:
+        entry = hover_data['points'][0]['id']
     else:
-        raise dash.exceptions.PreventUpdate
+        entry = click_data['points'][0]['id']
 
-    if hov_data is None or hov_data['points'][0]['customdata'][0] == 'profit':
-        dff = df.loc[df['Type'] == 'Sales']
-        figure = px.bar(dff, x='Month', y='Amount', title='Monthly Sales data')
-    else:
-        chart3_df = df.loc[df['Account'] == hov]
-        figure = px.bar(chart3_df, x='Month', y='Amount', title=title_x)
+    entry_list = entry.split('/')
+
+    for i in entry_list:
+        if i in list(df['State/UT']):
+            ddf = df.loc[df['State/UT'] == i]
+            tx = f'Summarised chart for the {i} State/UT'
+        elif i in ["North", "South", "East", "West"]:
+            ddf = df.loc[df['Direction'] == i]
+            tx = f'Summarised chart for the {i} Region'
+        else:
+            ddf = df
+            tx = 'Summarised chart for the period 2020'
+
+    figure = px.sunburst(ddf, path=['Type', 'Account'], values='Amount', template='plotly_dark',
+                         title=tx, custom_data=['State/UT', 'Account'])
     return figure
 
 
+@app.callback(
+    Output(component_id='line', component_property='figure'),
+    Input(component_id='starburst', component_property='hoverData'),
+    Input(component_id='starburst', component_property='clickData'),
+    prevent_initial_call=True,
+    allow_duplicate=True
+)
+def line(hover_data, click_data):
+    if click_data is None and hover_data is None:
+        entry = ["2020"]
+    elif click_data is None:
+        entry = hover_data['points'][0]['customdata']
+    else:
+        entry = click_data['points'][0]['customdata']
+
+    for i in entry:
+        if i in list(df['Account']):
+            ddf = df.loc[(df['State/UT'] == i) | (df['Account'] == i)]  # Updated condition
+            tx = f'Monthly breakup chart for the Account {i}'  # Updated title
+        else:
+            ddf = df
+            tx = 'Monthly breakup chart for the period 2020'
+
+    figure = px.bar(ddf, x="Month", y='Amount', template='plotly_dark', color="Account",
+                    title=tx)
+    return figure
+
 if __name__ == '__main__':
+
     app.run_server(debug=True)
