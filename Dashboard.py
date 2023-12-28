@@ -47,6 +47,20 @@ app.layout = dbc.Container([
                 width=12)
     ),
 
+dbc.Row([
+        dbc.Col(html.Span([html.P( "App provides a visual representation of current status of a company."),
+                           html.Br(),
+                           html.P("The first Treemap, Highlights the provides a birds eye view of the organization based on Financial year, location and segment."),
+                           html.P("Segments performance as green if it is profitable and red if its loss making. Further drill down data can be presented based on availability of data."),
+                           html.Br(),
+                           html.P('Based on the segment "Clicked or Hovered over", the Pie chart below is updated.'),
+                           html.P("The Pie chart is in form of starburst allowing us to visualize the Different components of sales and expenses incurred during the year."),
+                           html.Br(),
+                           html.P('Based on the expenses "Clicked" the bar graph is updated and further understand the month wise details to have better understanding of the data.')
+                        ],
+                          className='text-md-left  mb-4'), width=12)
+    ]),
+
     dbc.Row([
         dbc.Col([
             dcc.Graph(id='treemap', figure=px.treemap(
@@ -69,7 +83,20 @@ app.layout = dbc.Container([
                 dcc.Graph(id='line', figure={}
                           )], xs=12, sm=12, md=12, lg=6, xl=6, className='w-50 p-3'),
         ]),
-    ])
+    ]),
+    dbc.Row(children = [
+        dbc.Col([
+            html.P("Note:"),
+            html.Br(),
+            html.P("This Dashboard is created using dummy data as part of presentation."),
+            html.Br(),
+            html.P("For further queries or oppertunites to collaborate, Please Reach me at:"),
+            html.A('vigneshkrishnan097@gmail.com', href = '#',target='_blank'),
+            html.Br(),
+            html.A('Linkedin', href = 'https://www.linkedin.com/in/vignesh-krishnan-a2136b1bb/',target='_blank'),
+            ],
+            className = 'text-md-left  mb-4'),
+        ]),
 ])
 
 
